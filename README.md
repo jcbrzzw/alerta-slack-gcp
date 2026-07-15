@@ -23,4 +23,4 @@ Este projeto automatiza o monitoramento de datasets no Google BigQuery. Ele veri
 ## Notificação
 Abaixo, é o print de como o alerta aparece no Slack:
 
-![Notificação Slack](notificacao_slack.png)
+![Notificação Slack](notificacao_slack1.png)
