@@ -35,7 +35,7 @@ def verificar_alertas_vendas():
         INNER JOIN `{project_id}.Vendas.Produto` p ON i.product_id = p.id
         INNER JOIN `{project_id}.Vendas.Ordens` o ON i.order_id = o.id
         WHERE DATE_DIFF(CURRENT_DATE(), DATE(o.created_at), DAY) >= 0
-        LIMIT 1
+        LIMIT 3
     """
 
     print("🔍 Executando query na região correta...")
