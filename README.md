@@ -1,4 +1,4 @@
-# Alerta Catálogo GCP
+# Alerta Slack GCP
 
 ## Descrição
 Este projeto automatiza o monitoramento de datasets no Google BigQuery. Ele verifica alterações e envia alertas em tempo real para o canal no Slack, garantindo que a equipe seja notificada imediatamente.
