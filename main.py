@@ -1,67 +1,90 @@
-import functions_framework
-from google.cloud import bigquery
-import requests
 import os
+import requests
+from google.cloud import bigquery
+from google.oauth2 import service_account
+from dotenv import load_dotenv
 
-# Pega o webhook de forma segura usando variáveis de ambiente no GCP
-SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL", "SUA_URL_PADRAO_DO_WEBHOOK_AQUI")
+# Carrega apenas o Webhook e o Project ID do .env
+load_dotenv()
+SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
+project_id = os.environ.get("GCP_PROJECT_ID")
 
-@functions_framework.http
-def verificar_alertas_vendas(request):
-    client = bigquery.Client()
+def verificar_alertas_vendas():
+    caminho_credenciais = "credenciais.json"
 
-    # Query direcionada para o dataset 'Vendas'
-    query = """
+    credentials = service_account.Credentials.from_service_account_file(caminho_credenciais)
+    client = bigquery.Client(credentials=credentials, project=project_id)
+
+    try:
+        dataset_ref = client.dataset("Vendas")
+        dataset = client.get_dataset(dataset_ref)
+        localizacao = dataset.location
+        print(f"📍 Dataset 'Vendas' encontrado na região: {localizacao}")
+    except Exception as e:
+        print(f"❌ Erro ao localizar o dataset 'Vendas': {str(e)}")
+        return
+
+    query = f"""
         SELECT 
           i.order_id,
           p.name AS produto_nome,
-          DATE_DIFF(CURRENT_DATE(), DATE(o.order_date), DAY) AS dias_decorridos
-        FROM `seu_projeto_gcp.Vendas.items` i
-        INNER JOIN `seu_projeto_gcp.Vendas.produto` p ON i.product_id = p.id
-        INNER JOIN `seu_projeto_gcp.Vendas.orders` o ON i.order_id = o.id
-        WHERE DATE_DIFF(CURRENT_DATE(), DATE(o.order_date), DAY) IN (120, 130, 140)
+          p.price AS preco_produto,
+          i.quantity AS quantidade,
+          DATE_DIFF(CURRENT_DATE(), DATE(o.created_at), DAY) AS dias_decorridos
+        FROM `{project_id}.Vendas.Items` i
+        INNER JOIN `{project_id}.Vendas.Produto` p ON i.product_id = p.id
+        INNER JOIN `{project_id}.Vendas.Ordens` o ON i.order_id = o.id
+        WHERE DATE_DIFF(CURRENT_DATE(), DATE(o.created_at), DAY) >= 0
+        LIMIT 1
     """
 
+    print("🔍 Executando query na região correta...")
     try:
-        query_job = client.query(query)
-        results = query_job.result()
+        query_job = client.query(query, location=localizacao)
+        resultados = query_job.result()
         
         alertas_enviados = 0
-        for row in results:
-            enviar_alerta_slack(
-                produto=row.produto_nome,
-                pedido=row.order_id,
-                dias=row.dias_decorridos
-            )
-            alertas_enviados += 1
-            
-        return f"Processamento concluido. {alertas_enviados} alertas enviados.", 200
+        for linha in resultados:
+            print(f"DEBUG: Processando pedido {linha.order_id}...")
+            try:
+                enviar_alerta_slack(
+                    produto=linha.produto_nome,
+                    pedido=linha.order_id,
+                    dias=linha.dias_decorridos,
+                    preco=str(linha.preco_produto),
+                    qtd=str(linha.quantidade)
+                )
+                alertas_enviados += 1
+            except Exception as e:
+                print(f"❌ Erro ao chamar a função Slack para o pedido {linha.order_id}: {e}")
+        
+        print(f"\n🎉 Processo concluído! {alertas_enviados} alertas processados.")
 
     except Exception as e:
-        print(f"Erro na execucao: {str(e)}")
-        return f"Erro: {str(e)}", 500
+        print(f"\n❌ Erro durante a execução da query: {str(e)}")
 
-def enviar_alerta_slack(produto, pedido, dias):
-    if dias == 120:
-        cor = "#FFCC00"  # Amarelo
-    elif dias == 130:
-        cor = "#FF9900"  # Laranja
-    else:
-        cor = "#FF0000"  # Vermelho (140 dias)
 
+def enviar_alerta_slack(produto, pedido, dias, preco, qtd):
     payload = {
-        "attachments": [
-            {
-                "color": cor,
-                "title": f"🚨 Alerta {dias} dias: Corrigir Catálogo",
-                "text": f"O produto *{produto}* (Pedido #{pedido}) necessita de ajuste.",
-                "fields": [
-                    {"title": "Dias decorridos", "value": f"{dias} dias", "short": True},
-                    {"title": "Origem", "value": "Dataset Vendas (GCP)", "short": True}
-                ],
-                "footer": "GCP Cloud Functions & Slack Bot"
-            }
-        ]
+        "attachments": [{
+            "color": "#36a64f",
+            "title": f"📊 Relatório de Pedidos: {dias} dias",
+            "text": f"O produto *{produto}* está travado.",
+            "fields": [
+                {"title": "Pedido", "value": f"#{pedido}", "short": True},
+                {"title": "Preço", "value": f"R$ {preco}", "short": True},
+                {"title": "Qtd", "value": qtd, "short": True}
+            ]
+        }]
     }
     
-    requests.post(SLACK_WEBHOOK_URL, json=payload)
+    try:
+        response = requests.post(SLACK_WEBHOOK_URL, json=payload)
+        print(f"DEBUG: Slack respondeu com código {response.status_code}")
+        if response.status_code != 200:
+            print(f"⚠️ Erro detalhado do Slack: {response.text}")
+    except Exception as e:
+        print(f"⚠️ Erro de conexão com o Slack: {e}")
+
+if __name__ == "__main__":
+    verificar_alertas_vendas()
