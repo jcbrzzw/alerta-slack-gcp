@@ -23,17 +23,18 @@ Após clonar o repositório, certifique-se de que a estrutura de arquivos esteja
 
 2. Configuração de Segredos
 Crie o arquivo .env na raiz do projeto e adicione suas variáveis:
-
 <img width="608" height="59" alt="image" src="https://github.com/user-attachments/assets/f5fbbbb7-de58-4973-a3a8-63a126c71582" />
 
 O arquivo credenciais.json deve ser baixado do console do Google Cloud (IAM > Contas de Serviço > Chaves) e salvo na raiz com esse nome exato.
 
 3. Instalação de Dependências
 No seu terminal dentro da pasta do projeto, execute:
+
 <img width="324" height="42" alt="image" src="https://github.com/user-attachments/assets/1a2fb600-7b77-4fe5-80f3-4bdfe4846925" />
 
-4. Execução
+5. Execução
 Para rodar o monitoramento manualmente:
+
 <img width="186" height="43" alt="image" src="https://github.com/user-attachments/assets/930e1bdd-9116-41e7-bfd9-a3d9fc01fa1a" />
 
 # 📊 Estrutura de Notificação
@@ -49,6 +50,7 @@ Dados do Produto: Nome, preço e quantidade.
 Nunca compartilhe seu arquivo credenciais.json ou seu .env.
 
 Certifique-se de que o seu arquivo .gitignore contenha estas duas linhas para evitar vazamento de dados sensíveis no Git:
+
 <img width="239" height="56" alt="image" src="https://github.com/user-attachments/assets/e778e813-018c-40a3-b174-acfa6aa06ddf" />
 
 # 📈 Automação e Orquestração
@@ -61,10 +63,10 @@ Cloud Functions: Aloja o seu script main.py de forma isolada na nuvem.
 
 Cloud Scheduler: Atua como um despertador, disparando a execução da sua Cloud Function via HTTP em horários específicos (ex: diariamente às 09:00).
 
-2. Caminho Profissional: Apache Airflow (Recomendado para escala)
-Se o seu volume de dados crescer ou se você precisar criar dependências (ex: "só notificar o Slack se o BigQuery carregar os dados primeiro"), a recomendação é usar o Cloud Composer o serviço gerenciado do Airflow no GCP.
+2. Caminho Profissional: Apache Airflow - Recomendado para escala
+Se o seu volume de dados crescer ou se você precisar criar dependências ex: só notificar o Slack se o BigQuery carregar os dados primeiro, a recomendação é usar o Cloud Composer o serviço gerenciado do Airflow no GCP.
 
-O Airflow transforma seu script em um DAG (Directed Acyclic Graph).
+O Airflow transforma seu script em um DAG - Directed Acyclic Graph.
 
 # Vantagens:
 
