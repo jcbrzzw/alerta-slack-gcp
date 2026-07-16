@@ -74,7 +74,7 @@ alerta-catalogo-gcp/
 └── requirements.txt   # Dependências
 ```
 
-3. Configuração de Segredos
+2. Configuração de Segredos
 Crie o arquivo `.env` na raiz do projeto e adicione suas variáveis:
 ```
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX
@@ -89,7 +89,7 @@ No seu terminal dentro da pasta do projeto, execute:
 pip install -r requirements.txt
 ```
 
-5. Execução
+4. Execução
 Para rodar o monitoramento manualmente:
 ``` Bash
 python main.py
