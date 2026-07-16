@@ -5,6 +5,55 @@ Este projeto automatiza a auditoria de pedidos no Google BigQuery e notifica via
 # 🛠️ Arquitetura do Projeto
 O script realiza uma consulta SQL no BigQuery cruzando tabelas de itens, produtos e ordens, tratando os dados em tempo real e disparando alertas visuais no Slack.
 
+```mermaid
+graph TD
+    %% --- Definição das Raias (Subgraphs) ---
+    subgraph Local_Server ["Ambiente Local / Servidor"]
+        Start[Início: Execução do Script Python main.py]
+        LoadSecrets[Ler Variáveis .env e Credenciais JSON]
+    end
+
+    subgraph GCP_Cloud ["Google Cloud Platform (GCP)"]
+        BQConnect[Conectar ao BigQuery Service Account]
+        BQQuery[Executar Consulta SQL - Auditoria de Pedidos]
+        Decision{Existem Produtos Pendentes? > X dias}
+    end
+
+    subgraph Slack_Channel ["Slack"]
+        ProcessPayload[Processar e Formatar Dados Payload JSON]
+        SendWebhook[Enviar Notificação via Webhook]
+        DisplayAlert[Exibir Mensagem com Attachments - Alerta Visual]
+        EndSuccess[Fim: Alerta enviado com sucesso]
+    end
+
+    EndNoAlert[Fim: Nenhum alerta necessário]
+
+    %% --- Conectores do Fluxo Principal ---
+    Start --> LoadSecrets
+    LoadSecrets --> BQConnect
+    BQConnect --> BQQuery
+    BQQuery --> Decision
+
+    %% --- Lógica da Decisão ---
+    Decision -- Sim --> ProcessPayload
+    Decision -- Não --> EndNoAlert
+
+    %% --- Continuação do Fluxo (Sim) ---
+    ProcessPayload --> SendWebhook
+    SendWebhook --> DisplayAlert
+    DisplayAlert --> EndSuccess
+
+    %% --- Estilização (Opcional para melhor visualização) ---
+    classDef process fill:#e1f5fe,stroke:#0277bd,stroke-width:1px,rx:5,ry:5;
+    classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:1px;
+    classDef terminal fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,rx:15,ry:15;
+    classDef error fill:#ffebee,stroke:#c62828,stroke-width:1px;
+
+    class Start,LoadSecrets,BQConnect,BQQuery,ProcessPayload,SendWebhook,DisplayAlert process;
+    class Decision decision;
+    class EndSuccess,EndNoAlert terminal;
+```
+
 # 📋 Pré-requisitos
 
 - Python 3.x instalado.
@@ -85,9 +134,9 @@ Se o seu volume de dados crescer ou se você precisar criar dependências, só n
 ## Notificação
 Abaixo, é o print de como o alerta aparece no Slack:
 
-<img width="958" height="478" alt="image" src="https://github.com/user-attachments/assets/a99a3a41-eed8-47a5-8b71-60333ccbf3f1" />
-
-
+<img width="958" height="478" alt="image" src="https://github.com/user-attachments/assets/a99a3a41-eed8-47a5-8b71-60333ccbf3f1" />  
+<br/>
+<br/>
 Abaixo visualizamos a dag, caso o processo seja automatizado:
 <img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/7696ebe9-d747-4b24-b6a6-9c8160c972dc" />
 
