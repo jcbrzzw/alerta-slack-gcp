@@ -75,13 +75,13 @@ alerta-catalogo-gcp/
 ```
 
 3. Configuração de Segredos
-Crie o arquivo .env na raiz do projeto e adicione suas variáveis:
+Crie o arquivo `.env` na raiz do projeto e adicione suas variáveis:
 ```
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX
 GCP_PROJECT_ID=seu-id-do-projeto-gcp
 ```
 
-O arquivo credenciais.json deve ser baixado do console do Google Cloud (IAM > Contas de Serviço > Chaves) e salvo na raiz com esse nome exato.
+O arquivo `credenciais.json` deve ser baixado do console do Google Cloud (IAM > Contas de Serviço > Chaves) e salvo na raiz com esse nome exato.
 
 3. Instalação de Dependências
 No seu terminal dentro da pasta do projeto, execute:
@@ -103,9 +103,9 @@ O sistema utiliza attachments do Slack para exibir informações detalhadas, inc
 - Dados do Produto: Nome, preço e quantidade.
 
 # 🛡️ Segurança 
-Nunca compartilhe seu arquivo credenciais.json ou seu .env.
+Nunca compartilhe seu arquivo credenciais.json ou seu `.env`.
 
-Certifique-se de que o seu arquivo .gitignore contenha estas duas linhas para evitar vazamento de dados sensíveis no Git:
+Certifique-se de que o seu arquivo `.gitignore` contenha estas duas linhas para evitar vazamento de dados sensíveis no Git:
 
 ``` Plaintext
 .env
@@ -115,20 +115,20 @@ credenciais.json
 # 📈 Automação e Orquestração
 Existem duas formas principais de colocar seu monitoramento em produção:
 
-# 1. Serverless
+## 1. Serverless
 Ideal para projetos leves, baixo custo e configuração rápida.
 
-- Cloud Functions: Aloja o seu script main.py de forma isolada na nuvem.
+- Cloud Functions: Aloja o seu script `main.py` de forma isolada na nuvem.
 - Cloud Scheduler: Atua como um despertador, disparando a execução da sua Cloud Function via HTTP em horários específicos como diariamente às 09:00.
 
-# 2.  Apache Airflow 
+## 2.  Apache Airflow 
 Se o seu volume de dados crescer ou se você precisar criar dependências, só notificar o Slack se o BigQuery carregar os dados primeiro, a recomendação é usar o Cloud Composer o serviço gerenciado do Airflow no GCP. O Airflow transforma seu script em um DAG - Directed Acyclic Graph.
 
 # Vantagens:
 
 - Se a API do Slack falhar, o Airflow tenta novamente sozinho.
 - Interface dedicada para ver logs e histórico de execução de cada tarefa.
--Facilita a criação de fluxos de trabalho complexos onde várias etapas se conectam.
+- Facilita a criação de fluxos de trabalho complexos onde várias etapas se conectam.
 
 
 ## Notificação
